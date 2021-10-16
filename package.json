@@ -1,33 +1,33 @@
 {
-  "name": "ts-three-template",
-  "version": "1.0.0",
-  "description": "Project template",
-  "private": true,
-  "scripts": {
-    "build": "webpack --config ./src/client/webpack.prod.js",
-    "dev": "webpack serve --config ./src/client/webpack.dev.js",
-    "start": "echo \"Error: no real server implemented\" && exit 1",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/psandahl/ts-three-template.git"
-  },
-  "author": "Patrik Sandahl",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/psandahl/ts-three-template/issues"
-  },
-  "homepage": "https://github.com/psandahl/ts-three-template#readme",
-  "devDependencies": {
-    "@types/dat.gui": "^0.7.7",
-    "@types/three": "^0.133.0",
-    "three": "^0.133.1",
-    "ts-loader": "^9.2.6",
-    "typescript": "^4.4.3",
-    "webpack": "^5.58.1",
-    "webpack-cli": "^4.9.0",
-    "webpack-dev-server": "^4.3.1",
-    "webpack-merge": "^5.8.0"
-  }
+    "name": "augmented-video",
+    "version": "1.0.0",
+    "description": "Augmented Video Viewer",
+    "private": true,
+    "scripts": {
+        "build": "webpack --config ./src/client/webpack.prod.js",
+        "dev": "webpack serve --config ./src/client/webpack.dev.js",
+        "start": "echo \"Error: no real server implemented\" && exit 1",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/psandahl/augmented-video.git"
+    },
+    "author": "Patrik Sandahl",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/psandahl/augmented-video/issues"
+    },
+    "homepage": "https://github.com/psandahl/augmented-video#readme",
+    "devDependencies": {
+        "@types/dat.gui": "^0.7.7",
+        "@types/three": "^0.133.0",
+        "three": "^0.133.1",
+        "ts-loader": "^9.2.6",
+        "typescript": "^4.4.3",
+        "webpack": "^5.58.1",
+        "webpack-cli": "^4.9.0",
+        "webpack-dev-server": "^4.3.1",
+        "webpack-merge": "^5.8.0"
+    }
 }
