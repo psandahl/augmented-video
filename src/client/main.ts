@@ -1,5 +1,5 @@
 import * as Three from 'three';
-import { ImageLoader } from 'three';
+import { ColladaLoader } from 'three/examples/jsm/loaders/ColladaLoader';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import Stats from 'three/examples/jsm/libs/stats.module';
 
@@ -46,10 +46,36 @@ window.onload = async () => {
     // Add the renderer canvas to the DOM.
     document.body.append(renderer.domElement);
 
+    // Some experimental stuff with Collada.
+    const colladaLoader = new ColladaLoader();
+    colladaLoader.load(
+        './content/collada/Gun.dae',
+        (model) => {
+            console.log(model.scene.position);
+            scene.add(model.scene);
+
+            // Add some lights.
+            const ambientLight = new Three.AmbientLight(
+                new Three.Color(1.0, 1.0, 1.0),
+                0.3
+            );
+            scene.add(ambientLight);
+
+            const spotLight = new Three.SpotLight(
+                new Three.Color(1.0, 1.0, 1.0)
+            );
+            spotLight.position.set(10, 10, 10);
+            scene.add(spotLight);
+        },
+        (error) => {
+            console.warn(error);
+        }
+    );
+
     // Create the video overlay.
-    videoOverlay = new VideoOverlay();
-    videoOverlay.updateTexture(image);
-    scene.add(videoOverlay.mesh());
+    //videoOverlay = new VideoOverlay();
+    //videoOverlay.updateTexture(image);
+    //scene.add(videoOverlay.mesh());
 
     // Tool: Add the statistics widget to the DOM.
     stats = Stats();
@@ -162,7 +188,7 @@ function createRenderer(
     const renderer = new Three.WebGLRenderer({ antialias: true });
     renderer.setScissorTest(true);
     renderer.setPixelRatio(pixelRatio);
-    renderer.setClearColor(new Three.Color(0.0, 0.0, 1.0));
+    renderer.setClearColor(new Three.Color(0.8, 0.8, 0.8));
     resizeRenderer(renderer, width, height, cameraAspectRatio);
     renderer.domElement.tabIndex = 1;
 
@@ -216,7 +242,7 @@ function createMouseControl(
     const controls = new OrbitControls(camera, canvas);
     controls.screenSpacePanning = false;
     controls.minDistance = 1.0;
-    controls.maxDistance = 2000.0;
+    controls.maxDistance = 3000.0;
     controls.maxPolarAngle = Math.PI / 2.0;
 
     return controls;
