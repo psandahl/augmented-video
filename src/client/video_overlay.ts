@@ -9,7 +9,7 @@ export class VideoOverlay {
         // Create geometry.
 
         // Vertices: z is always zero. Just omit.
-        const vertices = new Float32Array([
+        const positions = new Float32Array([
             // Upper left triangle
             -1.0, -1.0, 0.0,
 
@@ -26,7 +26,7 @@ export class VideoOverlay {
         ]);
 
         // Texture coordinates.
-        const texCoords = new Float32Array([
+        const uvs = new Float32Array([
             // Upper left triangle
             0.0, 0.0,
 
@@ -45,12 +45,9 @@ export class VideoOverlay {
         const geometry = new Three.BufferGeometry();
         geometry.setAttribute(
             'position',
-            new Three.BufferAttribute(vertices, 3)
+            new Three.BufferAttribute(positions, 3)
         );
-        geometry.setAttribute(
-            'texCoord',
-            new Three.BufferAttribute(texCoords, 2)
-        );
+        geometry.setAttribute('uv', new Three.BufferAttribute(uvs, 2));
 
         // Create texture.
         const texture = new Three.Texture();
@@ -99,12 +96,12 @@ export class VideoOverlay {
     private readonly _vertexSource = `#version 300 es
 
 layout (location = 0) in vec3 position;
-layout (location = 1) in vec2 texCoord;
+layout (location = 1) in vec2 uv;
 
-out vec2 vTexCoord;
+out vec2 vUv;
 
 void main() {
-    vTexCoord = texCoord;
+    vUv = uv;
     gl_Position = vec4(position, 1.0);
 }`;
 
@@ -114,10 +111,10 @@ precision highp float;
 
 uniform sampler2D uImage;
 
-in vec2 vTexCoord;
+in vec2 vUv;
 out vec4 color;
 
 void main() {
-    color = vec4(texture(uImage, vTexCoord).rgb, 1.0);
+    color = vec4(texture(uImage, vUv).rgb, 1.0);
 }`;
 }
