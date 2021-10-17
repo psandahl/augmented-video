@@ -1,17 +1,25 @@
 import * as Three from 'three';
+import { ImageLoader } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import Stats from 'three/examples/jsm/libs/stats.module';
+
+import { VideoOverlay } from './video_overlay';
 
 let scene: Three.Scene;
 let camera: Three.PerspectiveCamera;
 let renderer: Three.WebGLRenderer;
+let videoOverlay: VideoOverlay;
 let stats: Stats;
 let mouse: OrbitControls;
 
 /**
  * Kick-start the application.
  */
-window.onload = () => {
+window.onload = async () => {
+    // Temporary: fetch an image at the beginning.
+    const image = await fetchImage('content/montreal.jpg');
+    const imageAspectRatio = image.naturalWidth / image.naturalHeight;
+
     const hFov = 60;
     const vFov = 45;
     const cameraAspectRatio = aspectRatioFromFov(hFov, vFov);
@@ -31,12 +39,17 @@ window.onload = () => {
     renderer = createRenderer(
         window.innerWidth,
         window.innerHeight,
-        cameraAspectRatio,
+        imageAspectRatio,
         window.devicePixelRatio
     );
 
     // Add the renderer canvas to the DOM.
     document.body.append(renderer.domElement);
+
+    // Create the video overlay.
+    videoOverlay = new VideoOverlay();
+    videoOverlay.updateTexture(image);
+    scene.add(videoOverlay.mesh());
 
     // Tool: Add the statistics widget to the DOM.
     stats = Stats();
@@ -157,25 +170,6 @@ function createRenderer(
 }
 
 /**
- * Create a mouse control.
- * @param camera The camera to manipulate
- * @param canvas The canvas to track events on
- * @returns The mouse control
- */
-function createMouseControl(
-    camera: Three.Camera,
-    canvas: HTMLElement
-): OrbitControls {
-    const controls = new OrbitControls(camera, canvas);
-    controls.screenSpacePanning = false;
-    controls.minDistance = 1.0;
-    controls.maxDistance = 2000.0;
-    controls.maxPolarAngle = Math.PI / 2.0;
-
-    return controls;
-}
-
-/**
  * Resize the renderer
  * @param renderer The renderer
  * @param width Width of the canvas
@@ -207,4 +201,39 @@ function resizeRenderer(
 
         renderer.setScissor(widthDiff / 2, 0, videoWidth, height);
     }
+}
+
+/**
+ * Create a mouse control.
+ * @param camera The camera to manipulate
+ * @param canvas The canvas to track events on
+ * @returns The mouse control
+ */
+function createMouseControl(
+    camera: Three.Camera,
+    canvas: HTMLElement
+): OrbitControls {
+    const controls = new OrbitControls(camera, canvas);
+    controls.screenSpacePanning = false;
+    controls.minDistance = 1.0;
+    controls.maxDistance = 2000.0;
+    controls.maxPolarAngle = Math.PI / 2.0;
+
+    return controls;
+}
+
+/**
+ * Async fetch of an image.
+ * @param url Image URL
+ * @returns Promise carrying the image
+ */
+function fetchImage(url: string): Promise<HTMLImageElement> {
+    return new Promise((resolve, reject) => {
+        const loader = new Three.ImageLoader();
+        loader.load(
+            url,
+            (image) => resolve(image),
+            (error) => reject(error)
+        );
+    });
 }
