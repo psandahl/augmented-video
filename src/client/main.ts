@@ -20,9 +20,9 @@ window.onload = async () => {
     const image = await fetchImage('content/montreal.jpg');
     const imageAspectRatio = image.naturalWidth / image.naturalHeight;
 
+    // Hard coded values for now.
     const hFov = 60;
     const vFov = 45;
-    const cameraAspectRatio = aspectRatioFromFov(hFov, vFov);
 
     // Create scene.
     scene = createEmptyScene();
@@ -31,33 +31,31 @@ window.onload = async () => {
     camera = createPerspectiveCamera(
         new Three.Vector3(0, 0, 0),
         new Three.Vector3(0, 0, 0),
+        hFov,
         vFov,
-        cameraAspectRatio
     );
 
     // Create renderer.
-    renderer = createRenderer(
-        window.innerWidth,
-        window.innerHeight,
-        imageAspectRatio,
-        window.devicePixelRatio
-    );
+    renderer = createRenderer(camera.aspect);
 
     // Add the renderer canvas to the DOM.
     document.body.append(renderer.domElement);
+
+    /*
 
     // Some experimental stuff with Collada.
     const colladaLoader = new ColladaLoader();
     colladaLoader.load(
         './content/collada/Gun.dae',
         (model) => {
-            console.log(model.scene.position);
+
+            model.scene.position.set(0, 0, -5);
             scene.add(model.scene);
 
             // Add some lights.
             const ambientLight = new Three.AmbientLight(
                 new Three.Color(1.0, 1.0, 1.0),
-                0.3
+                0.5
             );
             scene.add(ambientLight);
 
@@ -71,11 +69,12 @@ window.onload = async () => {
             console.warn(error);
         }
     );
+    */
 
     // Create the video overlay.
-    //videoOverlay = new VideoOverlay();
-    //videoOverlay.updateTexture(image);
-    //scene.add(videoOverlay.mesh());
+    videoOverlay = new VideoOverlay();
+    videoOverlay.updateTexture(image);
+    scene.add(videoOverlay.mesh());
 
     // Tool: Add the statistics widget to the DOM.
     stats = Stats();
@@ -98,12 +97,7 @@ window.onload = async () => {
  * Act on resize events.
  */
 window.onresize = () => {
-    resizeRenderer(
-        renderer,
-        window.innerWidth,
-        window.innerHeight,
-        camera.aspect
-    );
+    setDrawingArea(renderer, camera.aspect);
 };
 
 /**
@@ -149,48 +143,40 @@ function createEmptyScene(): Three.Scene {
 }
 
 /**
- * Create a new perspective camera.
+ * Create a new perspective camera which is bound to its specified
+ * specification rather than the canvas' dimension.
  * @param position Position of the camera
  * @param rotation Rotation of the camera in degrees
+ * @param hFov Horizontal field of view in degrees
  * @param vFov Vertical field of view in degrees
- * @param aspectRatio Aspect ratio
+ * @returns The camera
  */
 function createPerspectiveCamera(
     position: Three.Vector3,
     rotation: Three.Vector3,
-    vFov: number,
-    aspectRatio: number
+    hFov: number,
+    vFov: number    
 ): Three.PerspectiveCamera {
+    const aspectRatio = aspectRatioFromFov(hFov, vFov);
     const camera = new Three.PerspectiveCamera(vFov, aspectRatio, 1.0, 4000.0);
     camera.position.set(position.x, position.y, position.z);
     camera.rotation.set(rotation.x, rotation.y, rotation.z);
-
-    camera.updateMatrixWorld();
-    camera.updateProjectionMatrix();
 
     return camera;
 }
 
 /**
  * Create a renderer.
- * @param width Width of the canvas
- * @param height Height of the canvas
  * @param cameraAspectRatio Aspect ratio for the camera
- * @param pixelRatio The device pixel ratio
  * @returns The renderer.
  */
-function createRenderer(
-    width: number,
-    height: number,
-    cameraAspectRatio: number,
-    pixelRatio: number
-): Three.WebGLRenderer {
+function createRenderer(cameraAspectRatio: number): Three.WebGLRenderer {
     const renderer = new Three.WebGLRenderer({ antialias: true });
-    renderer.setScissorTest(true);
-    renderer.setPixelRatio(pixelRatio);
-    renderer.setClearColor(new Three.Color(0.8, 0.8, 0.8));
-    resizeRenderer(renderer, width, height, cameraAspectRatio);
+    renderer.setScissorTest(true);    
+    renderer.setClearColor(new Three.Color(0.0, 0.0, 0.2));    
     renderer.domElement.tabIndex = 1;
+
+    setDrawingArea(renderer, cameraAspectRatio);
 
     return renderer;
 }
@@ -198,34 +184,34 @@ function createRenderer(
 /**
  * Resize the renderer
  * @param renderer The renderer
- * @param width Width of the canvas
- * @param height Height of the canvas
  * @param cameraAspectRatio Aspect ratio for the camera
  */
-function resizeRenderer(
-    renderer: Three.WebGLRenderer,
-    width: number,
-    height: number,
+function setDrawingArea(
+    renderer: Three.WebGLRenderer,    
     cameraAspectRatio: number
 ): void {
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(width, height);
-    renderer.setViewport(0, 0, width, height);
 
     const canvasAspectRatio = width / height;
     if (cameraAspectRatio > canvasAspectRatio) {
-        // The video is wider than the device. Setup a scissor area with
-        // adapted height.
-        const videoHeight = width * (1.0 / cameraAspectRatio);
-        const heightDiff = height - videoHeight;
+        // The camera view is wider than the canvas, keep the width but
+        // adjust the height.
+        const adjHeight = width * (1.0 / cameraAspectRatio);
+        const diff = height - adjHeight;
 
-        renderer.setScissor(0, heightDiff / 2, width, videoHeight);
+        renderer.setViewport(0, diff / 2, width, adjHeight);
+        renderer.setScissor(0, diff / 2, width, adjHeight);
     } else {
-        // The video is equal or taller than the device. Setup a
-        // scissor area with adapted width.
-        const videoWidth = height * cameraAspectRatio;
-        const widthDiff = width - videoWidth;
+        // The video is equal or taller than the device. Keep the height
+        // but adjust the width.
+        const adjWidth = height * cameraAspectRatio;
+        const diff = width - adjWidth;
 
-        renderer.setScissor(widthDiff / 2, 0, videoWidth, height);
+        renderer.setViewport(diff / 2, 0, adjWidth, height);
+        renderer.setScissor(diff / 2, 0, adjWidth, height);
     }
 }
 
