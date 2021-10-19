@@ -1,6 +1,5 @@
 import * as Three from 'three';
 import { ColladaLoader } from 'three/examples/jsm/loaders/ColladaLoader';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import Stats from 'three/examples/jsm/libs/stats.module';
 
 import { VideoOverlay } from './video_overlay';
@@ -10,7 +9,6 @@ let camera: Three.PerspectiveCamera;
 let renderer: Three.WebGLRenderer;
 let videoOverlay: VideoOverlay;
 let stats: Stats;
-let mouse: OrbitControls;
 
 /**
  * Kick-start the application.
@@ -18,7 +16,6 @@ let mouse: OrbitControls;
 window.onload = async () => {
     // Temporary: fetch an image at the beginning.
     const image = await fetchImage('content/montreal.jpg');
-    const imageAspectRatio = image.naturalWidth / image.naturalHeight;
 
     // Hard coded values for now.
     const hFov = 60;
@@ -29,7 +26,7 @@ window.onload = async () => {
 
     // Create camera.
     camera = createPerspectiveCamera(
-        new Three.Vector3(0, 0, 0),
+        new Three.Vector3(0, 0, -1),
         new Three.Vector3(0, 0, 0),
         hFov,
         vFov,
@@ -40,8 +37,6 @@ window.onload = async () => {
 
     // Add the renderer canvas to the DOM.
     document.body.append(renderer.domElement);
-
-    /*
 
     // Some experimental stuff with Collada.
     const colladaLoader = new ColladaLoader();
@@ -69,27 +64,22 @@ window.onload = async () => {
             console.warn(error);
         }
     );
-    */
 
     // Create the video overlay.
-    videoOverlay = new VideoOverlay();
-    videoOverlay.updateTexture(image);
-    scene.add(videoOverlay.mesh());
+    //videoOverlay = new VideoOverlay();
+    //videoOverlay.updateTexture(image);
+    //scene.add(videoOverlay.mesh());
 
     // Tool: Add the statistics widget to the DOM.
     stats = Stats();
     document.body.appendChild(stats.dom);
-
-    // Tool: Add mouse controls.
-    mouse = createMouseControl(camera, renderer.domElement);
 
     // Run the rendering loop.
     renderer.setAnimationLoop(() => {
         camera.updateMatrixWorld();
         renderer.render(scene, camera);
 
-        stats.update();
-        mouse.update();
+        stats.update();        
     });
 };
 
@@ -213,25 +203,6 @@ function setDrawingArea(
         renderer.setViewport(diff / 2, 0, adjWidth, height);
         renderer.setScissor(diff / 2, 0, adjWidth, height);
     }
-}
-
-/**
- * Create a mouse control.
- * @param camera The camera to manipulate
- * @param canvas The canvas to track events on
- * @returns The mouse control
- */
-function createMouseControl(
-    camera: Three.Camera,
-    canvas: HTMLElement
-): OrbitControls {
-    const controls = new OrbitControls(camera, canvas);
-    controls.screenSpacePanning = false;
-    controls.minDistance = 1.0;
-    controls.maxDistance = 3000.0;
-    controls.maxPolarAngle = Math.PI / 2.0;
-
-    return controls;
 }
 
 /**
