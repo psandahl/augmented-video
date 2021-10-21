@@ -139,9 +139,28 @@ export function fetchCollada(url: string): Promise<Collada> {
     });
 }
 
+/**
+ * Create a cs converter between UTM and ECEF.
+ * @param zone UTM zone number
+ * @returns The converter from UTM to ECEF
+ */
 export function createUtmToEcefConverter(zone: number): proj4.Converter {
     const utm = `+proj=utm +zone=${zone} +datum=WGS84 +units=m +no_defs`;
     const ecef = '+proj=geocent +datum=WGS84 +units=m +no_defs';
 
     return proj4(utm, ecef);
+}
+
+/**
+ * Rewrite a Collada terrain model. Convert from UTM to ECEF and add
+ * surface normals.
+ * @param model
+ * @param csConv
+ * @returns The rewritten model
+ */
+export function rewriteUTMTerrainModel(
+    model: Collada,
+    csConv: proj4.Converter
+): Three.Group {
+    return new Three.Group();
 }
