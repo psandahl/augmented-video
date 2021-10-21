@@ -4,6 +4,7 @@ import {
     Collada,
 } from 'three/examples/jsm/loaders/ColladaLoader';
 import { degToRad } from 'three/src/math/MathUtils';
+import proj4 from 'proj4';
 
 /**
  * Calculate aspect ratio from field of view.
@@ -136,4 +137,11 @@ export function fetchCollada(url: string): Promise<Collada> {
             (error) => reject(error)
         );
     });
+}
+
+export function createUtmToEcefConverter(zone: number): proj4.Converter {
+    const utm = `+proj=utm +zone=${zone} +datum=WGS84 +units=m +no_defs`;
+    const ecef = '+proj=geocent +datum=WGS84 +units=m +no_defs';
+
+    return proj4(utm, ecef);
 }
