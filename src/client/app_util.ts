@@ -1,5 +1,8 @@
 import * as Three from 'three';
-import { ColladaLoader } from 'three/examples/jsm/loaders/ColladaLoader';
+import {
+    ColladaLoader,
+    Collada,
+} from 'three/examples/jsm/loaders/ColladaLoader';
 import { degToRad } from 'three/src/math/MathUtils';
 
 /**
@@ -110,6 +113,26 @@ export function fetchImage(url: string): Promise<HTMLImageElement> {
         loader.load(
             url,
             (image) => resolve(image),
+            (progress) =>
+                console.log(`${url} has loaded ${progress.loaded} bytes`),
+            (error) => reject(error)
+        );
+    });
+}
+
+/**
+ * Async fetch of a collada model.
+ * @param url Collada URL.
+ * @returns Promise carrying the image.
+ */
+export function fetchCollada(url: string): Promise<Collada> {
+    return new Promise((resolve, reject) => {
+        const loader = new ColladaLoader();
+        loader.load(
+            url,
+            (collada) => resolve(collada),
+            (progress) =>
+                console.log(`${url} has loaded ${progress.loaded} bytes`),
             (error) => reject(error)
         );
     });
