@@ -168,6 +168,9 @@ export function rewriteUTMTerrainModel(
         wireframe: true,
     });
 
+    // This one is important!
+    model.scene.updateMatrixWorld();
+
     model.scene.traverse((child) => {
         if (child instanceof Three.Mesh) {
             const childMesh = child as Three.Mesh;
@@ -192,6 +195,13 @@ export function rewriteUTMTerrainModel(
                     const y = childPositions.getY(i);
                     const z = childPositions.getZ(i);
 
+                    // Transform the coordinate to world space.
+                    const pos = model.scene.localToWorld(
+                        new Three.Vector3(x, y, z)
+                    );
+                    console.log(pos);
+
+                    // Transform using the coordinate transform.
                     const [xx, yy, zz] = csConv.forward([x, y, z]);
                     positions.setXYZ(i, xx, yy, zz);
                 }
