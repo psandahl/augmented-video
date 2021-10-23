@@ -153,7 +153,7 @@ export function createUtmToEcefConverter(zone: number): proj4.Converter {
 
 /**
  * Rewrite a Collada terrain model. Convert from UTM to ECEF and add
- * surface normals.
+ * vertex normals.
  * @param model
  * @param csConv
  * @returns The rewritten model
@@ -162,5 +162,56 @@ export function rewriteUTMTerrainModel(
     model: Collada,
     csConv: proj4.Converter
 ): Three.Group {
-    return new Three.Group();
+    const group = new Three.Group();
+    const material = new Three.MeshBasicMaterial({
+        color: 0xff0000,
+        wireframe: true,
+    });
+
+    model.scene.traverse((child) => {
+        if (child instanceof Three.Mesh) {
+            const childMesh = child as Three.Mesh;
+            if (
+                childMesh.geometry.hasAttribute('position') &&
+                childMesh.geometry.getAttribute('position').itemSize == 3 &&
+                !childMesh.geometry.index
+            ) {
+                // Get the positions for the current child.
+                const childPositions =
+                    childMesh.geometry.getAttribute('position');
+
+                // Create a new attribute array.
+                const positions = new Three.BufferAttribute(
+                    new Float32Array(childPositions.array.length),
+                    3
+                );
+
+                // Populate the new array with coverted positions.
+                for (let i = 0; i < childPositions.count; ++i) {
+                    const x = childPositions.getX(i);
+                    const y = childPositions.getY(i);
+                    const z = childPositions.getZ(i);
+
+                    const [xx, yy, zz] = csConv.forward([x, y, z]);
+                    positions.setXYZ(i, xx, yy, zz);
+                }
+
+                // Create mesh and add to the group.
+                const geometry = new Three.BufferGeometry();
+                geometry.setAttribute('position', positions);
+
+                // Add vertex normals and bounding box.
+                geometry.computeVertexNormals();
+                geometry.computeBoundingBox();
+
+                group.add(new Three.Mesh(geometry, material));
+            } else {
+                console.warn(
+                    'Only supporting non indexed models with position'
+                );
+            }
+        }
+    });
+
+    return group;
 }
