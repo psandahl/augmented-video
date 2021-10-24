@@ -229,21 +229,32 @@ export function rewriteUTMTerrainModel(
 
 /**
  * Do everything needed to load a bunch of data.
- * @param urls
- * @param csConv
- * @param scene
+ * @param urls Urls to models
+ * @param csConv The converter
+ * @param scene The scene
+ * @param visualize Flag to add visualization of tiles
  * @returns The bounding box for the loaded data.
  */
 export function fetchRewriteAndLoadColladaTerrain(
     urls: string[],
     csConv: proj4.Converter,
-    scene: Three.Scene
+    scene: Three.Scene,
+    visualize: boolean = false
 ): Three.Box3 {
     const bBox = new Three.Box3();
     urls.forEach(async (url) => {
         const origModel = await fetchCollada(url);
         const adjModel = rewriteUTMTerrainModel(origModel, csConv);
         scene.add(adjModel);
+        if (visualize) {
+            adjModel.children.forEach((child) => {
+                if (child instanceof Three.Mesh) {
+                    const mesh = child as Three.Mesh;
+                    const helper = new Three.BoxHelper(mesh, 0xffff00);
+                    scene.add(helper);
+                }
+            });
+        }
         bBox.expandByObject(adjModel);
     });
 
