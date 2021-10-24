@@ -71,6 +71,7 @@ export class VideoOverlay {
         });
 
         this._mesh = new Three.Mesh(geometry, material);
+        this._mesh.frustumCulled = false;
     }
 
     /**
