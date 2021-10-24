@@ -226,3 +226,26 @@ export function rewriteUTMTerrainModel(
 
     return group;
 }
+
+/**
+ * Do everything needed to load a bunch of data.
+ * @param urls
+ * @param csConv
+ * @param scene
+ * @returns The bounding box for the loaded data.
+ */
+export function fetchRewriteAndLoadColladaTerrain(
+    urls: string[],
+    csConv: proj4.Converter,
+    scene: Three.Scene
+): Three.Box3 {
+    const bBox = new Three.Box3();
+    urls.forEach(async (url) => {
+        const origModel = await fetchCollada(url);
+        const adjModel = rewriteUTMTerrainModel(origModel, csConv);
+        scene.add(adjModel);
+        bBox.expandByObject(adjModel);
+    });
+
+    return bBox;
+}
