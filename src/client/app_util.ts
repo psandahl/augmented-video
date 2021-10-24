@@ -59,7 +59,11 @@ export function createPerspectiveCamera(
  * @returns The renderer.
  */
 export function createRenderer(cameraAspectRatio: number): Three.WebGLRenderer {
-    const renderer = new Three.WebGLRenderer({ antialias: true });
+    const renderer = new Three.WebGLRenderer({
+        antialias: true,
+        logarithmicDepthBuffer: true,
+        precision: 'highp',
+    });
     renderer.setScissorTest(true);
     renderer.setClearColor(new Three.Color(0.0, 0.0, 0.2));
     renderer.domElement.tabIndex = 1;
