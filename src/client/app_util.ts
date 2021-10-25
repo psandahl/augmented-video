@@ -235,15 +235,15 @@ export function rewriteUTMTerrainModel(
  * @param visualize Flag to add visualization of tiles
  * @returns The bounding box for the loaded data.
  */
-export function fetchRewriteAndLoadColladaTerrain(
+export async function fetchRewriteAndLoadColladaTerrain(
     urls: string[],
     csConv: proj4.Converter,
     scene: Three.Scene,
     visualize: boolean = false
-): Three.Box3 {
+): Promise<Three.Box3> {
     const bBox = new Three.Box3();
-    urls.forEach(async (url) => {
-        const origModel = await fetchCollada(url);
+    for (let i = 0; i < urls.length; ++i) {
+        const origModel = await fetchCollada(urls[i]);
         const adjModel = rewriteUTMTerrainModel(origModel, csConv);
         scene.add(adjModel);
         if (visualize) {
@@ -256,7 +256,7 @@ export function fetchRewriteAndLoadColladaTerrain(
             });
         }
         bBox.expandByObject(adjModel);
-    });
+    }
 
     return bBox;
 }
