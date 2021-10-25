@@ -228,32 +228,29 @@ export function rewriteUTMTerrainModel(
 }
 
 /**
- * Do everything needed to load a bunch of data.
+ * Do everything needed to load a bunch of terrain tiles.
  * @param urls Urls to models
  * @param csConv The converter
  * @param scene The scene
- * @param visualize Flag to add visualization of tiles
+ * @param rotations Rotations of each
+ * @param visualizeBoxes Flag to add visualization of tiles
  * @returns The bounding box for the loaded data.
  */
-export async function fetchRewriteAndLoadColladaTerrain(
+export async function fetchRewriteAndLoadColladaTerrainTiles(
     urls: string[],
     csConv: proj4.Converter,
     scene: Three.Scene,
-    visualize: boolean = false
+    rotations: Three.Euler,
+    visualizeBoxes: boolean = false
 ): Promise<Three.Box3> {
     const bBox = new Three.Box3();
     for (let i = 0; i < urls.length; ++i) {
         const origModel = await fetchCollada(urls[i]);
         const adjModel = rewriteUTMTerrainModel(origModel, csConv);
+        adjModel.setRotationFromEuler(rotations);
         scene.add(adjModel);
-        if (visualize) {
-            adjModel.children.forEach((child) => {
-                if (child instanceof Three.Mesh) {
-                    const mesh = child as Three.Mesh;
-                    const helper = new Three.BoxHelper(mesh, 0xffff00);
-                    scene.add(helper);
-                }
-            });
+        if (visualizeBoxes) {
+            scene.add(new Three.BoxHelper(adjModel));
         }
         bBox.expandByObject(adjModel);
     }

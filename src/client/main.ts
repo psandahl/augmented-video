@@ -25,7 +25,6 @@ window.onload = async () => {
     try {
         // Create CS converter.
         const csConv = createUtmToEcefConverter(33);
-        console.log(csConv.forward([500000.0, 4649776.22, 100.0]));
 
         // Temporary: fetch an image at the beginning.
         const image = await fetchImage('content/montreal.jpg');
