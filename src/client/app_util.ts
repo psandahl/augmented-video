@@ -31,6 +31,16 @@ export function createEmptyScene(): Three.Scene {
 }
 
 /**
+ * Create a quaternion that represents a rotation from the ECEF frame
+ * to the OpenGL frame.
+ * @returns The quaternion
+ */
+export function ecefToGLRotation(): Three.Quaternion {
+    const euler = new Three.Euler(degToRad(-90.0), degToRad(-90.0), 0.0, 'YXZ');
+    return new Three.Quaternion().setFromEuler(euler);
+}
+
+/**
  * Create a new perspective camera which is bound to its specified
  * specification rather than the canvas' dimension.
  * @param position Position of the camera
@@ -232,7 +242,7 @@ export function rewriteUTMTerrainModel(
  * @param urls Urls to models
  * @param csConv The converter
  * @param scene The scene
- * @param rotations Rotations of each
+ * @param rotations Rotations of the loaded tiles.
  * @param visualizeBoxes Flag to add visualization of tiles
  * @returns The bounding box for the loaded data.
  */
@@ -240,14 +250,14 @@ export async function fetchRewriteAndLoadColladaTerrainTiles(
     urls: string[],
     csConv: proj4.Converter,
     scene: Three.Scene,
-    rotations: Three.Euler,
+    rotations: Three.Quaternion,
     visualizeBoxes: boolean = false
 ): Promise<Three.Box3> {
     const bBox = new Three.Box3();
     for (let i = 0; i < urls.length; ++i) {
         const origModel = await fetchCollada(urls[i]);
         const adjModel = rewriteUTMTerrainModel(origModel, csConv);
-        adjModel.setRotationFromEuler(rotations);
+        adjModel.setRotationFromQuaternion(rotations);
         scene.add(adjModel);
         if (visualizeBoxes) {
             scene.add(new Three.BoxHelper(adjModel));
