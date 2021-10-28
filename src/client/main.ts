@@ -12,16 +12,15 @@ import {
 } from './app_util';
 import { VideoOverlay } from './video_overlay';
 
-let scene: Three.Scene;
-let camera: Three.PerspectiveCamera;
-let renderer: Three.WebGLRenderer;
-let videoOverlay: VideoOverlay;
-let stats: Stats;
-
 /**
  * Kick-start the application.
  */
-window.onload = async () => {
+window.onload = simplestDemo;
+
+/**
+ * A real simple demo app just to see that things are working.
+ */
+async function simplestDemo() {
     try {
         // Create CS converter.
         const csConv = createUtmToEcefConverter(33);
@@ -37,10 +36,10 @@ window.onload = async () => {
         const vFov = 45;
 
         // Create scene.
-        scene = createEmptyScene();
+        const scene = createEmptyScene();
 
         // Create camera.
-        camera = createPerspectiveCamera(
+        const camera = createPerspectiveCamera(
             new Three.Vector3(0, 0, 5),
             new Three.Vector3(0, 0, 0),
             hFov,
@@ -48,7 +47,7 @@ window.onload = async () => {
         );
 
         // Create renderer.
-        renderer = createRenderer(camera.aspect);
+        const renderer = createRenderer(camera.aspect);
 
         // Add the renderer canvas to the DOM.
         document.body.append(renderer.domElement);
@@ -68,13 +67,18 @@ window.onload = async () => {
         scene.add(spotLight);
 
         // Create the video overlay.
-        videoOverlay = new VideoOverlay();
+        const videoOverlay = new VideoOverlay();
         videoOverlay.updateTexture(image);
         scene.add(videoOverlay.mesh());
 
         // Tool: Add the statistics widget to the DOM.
-        stats = Stats();
+        const stats = Stats();
         document.body.appendChild(stats.dom);
+
+        window.onresize = () => {
+            console.log('size');
+            setDrawingArea(renderer, camera.aspect);
+        };
 
         // Run the rendering loop.
         renderer.setAnimationLoop(() => {
@@ -88,11 +92,4 @@ window.onload = async () => {
             document.createTextNode('Oops. Things just broke')
         );
     }
-};
-
-/**
- * Act on resize events.
- */
-window.onresize = () => {
-    setDrawingArea(renderer, camera.aspect);
-};
+}
