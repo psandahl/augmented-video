@@ -18,7 +18,7 @@ import { VideoOverlay } from './video_overlay';
 /**
  * Kick-start the application.
  */
-window.onload = simplestTerrainDemo;
+window.onload = simplestDemo;
 
 async function simplestTerrainDemo() {
     try {
@@ -31,21 +31,25 @@ async function simplestTerrainDemo() {
         const renderer = createRenderer(camera.aspect);
         document.body.append(renderer.domElement);
 
-        // Load data (not checked in).        
+        // Load data (not checked in).
         const converter = createUtmToEcefConverter(33);
         const terrainBox = await fetchRewriteAndLoadColladaTerrainTiles(
             ['./content/10/520/10_520_305/10_520_305.dae'],
             converter,
-            scene,            
-        );        
+            scene
+        );
 
         //const camPos = new Three.Vector3(3427674.5252427, 939242.8100310, 5280882.1911107);
-        const camPos = new Three.Vector3(3427185.2975538, 938976.2685280, 5280812.4649243);
+        const camPos = new Three.Vector3(
+            3427185.2975538,
+            938976.268528,
+            5280812.4649243
+        );
         //const camRot = cameraRotationYPR(-0.9804382, 0.7318679, 2.5203709);
-        const camRot = cameraRotationYPR(-0.8009253, 0.6818230, 2.6025103);
+        const camRot = cameraRotationYPR(-0.8009253, 0.681823, 2.6025103);
 
         camera.position.set(camPos.x, camPos.y, camPos.z);
-        camera.setRotationFromMatrix(camRot);        
+        camera.setRotationFromMatrix(camRot);
 
         // Tool: Add the statistics widget to the DOM.
         const stats = Stats();
@@ -53,7 +57,7 @@ async function simplestTerrainDemo() {
 
         window.onresize = () => {
             setDrawingArea(renderer, camera.aspect);
-        }
+        };
 
         renderer.setAnimationLoop(() => {
             camera.updateMatrixWorld();
@@ -61,10 +65,10 @@ async function simplestTerrainDemo() {
 
             stats.update();
         });
-
-
     } catch (e) {
-        document.body.append(document.createTextNode('Oops. Things just broke'));
+        document.body.append(
+            document.createTextNode('Oops. Things just broke')
+        );
     }
 }
 
@@ -122,7 +126,7 @@ async function simplestDemo() {
         const stats = Stats();
         document.body.appendChild(stats.dom);
 
-        window.onresize = () => {            
+        window.onresize = () => {
             setDrawingArea(renderer, camera.aspect);
         };
 
@@ -139,4 +143,3 @@ async function simplestDemo() {
         );
     }
 }
-
