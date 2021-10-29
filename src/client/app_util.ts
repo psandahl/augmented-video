@@ -42,23 +42,17 @@ export function ecefToGLRotation(): Three.Quaternion {
 
 /**
  * Create a new perspective camera which is bound to its specified
- * specification rather than the canvas' dimension.
- * @param position Position of the camera
- * @param rotation Rotation of the camera in degrees
+ * field of view specification rather than a canvas size.
  * @param hFov Horizontal field of view in degrees
  * @param vFov Vertical field of view in degrees
  * @returns The camera
  */
-export function createPerspectiveCamera(
-    position: Three.Vector3,
-    rotation: Three.Vector3,
+export function createPerspectiveCamera(    
     hFov: number,
     vFov: number
 ): Three.PerspectiveCamera {
     const aspectRatio = aspectRatioFromFov(hFov, vFov);
-    const camera = new Three.PerspectiveCamera(vFov, aspectRatio, 1.0, 4000.0);
-    camera.position.set(position.x, position.y, position.z);
-    camera.rotation.set(rotation.x, rotation.y, rotation.z);
+    const camera = new Three.PerspectiveCamera(vFov, aspectRatio, 1.0, 10000.0);
 
     return camera;
 }
@@ -250,20 +244,57 @@ export async function fetchRewriteAndLoadColladaTerrainTiles(
     urls: string[],
     csConv: proj4.Converter,
     scene: Three.Scene,
-    rotations: Three.Quaternion,
-    visualizeBoxes: boolean = false
+    rotations: Three.Quaternion = new Three.Quaternion()
 ): Promise<Three.Box3> {
     const bBox = new Three.Box3();
     for (let i = 0; i < urls.length; ++i) {
         const origModel = await fetchCollada(urls[i]);
         const adjModel = rewriteUTMTerrainModel(origModel, csConv);
         adjModel.setRotationFromQuaternion(rotations);
-        scene.add(adjModel);
-        if (visualizeBoxes) {
-            scene.add(new Three.BoxHelper(adjModel));
-        }
+        scene.add(adjModel);        
         bBox.expandByObject(adjModel);
     }
 
     return bBox;
+}
+
+/**
+ * Create a YPR matrix for the ECEF frame (x will point forward).
+ * @param yaw Yaw angle
+ * @param pitch Pitch angle
+ * @param roll Roll angle
+ * @returns The matrix
+ */
+export function matrixYPR(yaw: number, pitch: number, roll: number): Three.Matrix4 {
+    const sy = Math.sin(yaw);
+    const cy = Math.cos(yaw);
+    const sp = Math.sin(pitch);
+    const cp = Math.cos(pitch);
+    const sr = Math.sin(roll);
+    const cr = Math.cos(roll);
+
+    const matrix = new Three.Matrix4();
+    matrix.set(
+        cy * cp, cy * sp * sr - sy * cr, cy * sp * cr + sy * sr, 0.0,
+        sy * cp, sy * sp * sr + cy * cr, sy * sp * cr - cy * sr, 0.0,
+        -sp, cp * sr, cp * cr, 0.0,
+        0.0, 0.0, 0.0, 1.0
+    );
+
+    return matrix;    
+}
+
+/**
+ * Create an adapted camera rotation matrix for the OpenGL camera 
+ * (negative z point forward).
+ * @param yaw Yaw angle
+ * @param pitch Pitch angle
+ * @param roll Roll angle
+ * @returns The matrix
+ */
+export function cameraRotationYPR(yaw: number, pitch: number, roll: number): Three.Matrix4 {
+    const permute = new Three.Matrix4().makeRotationZ(Math.PI / 2.0);
+    permute.multiply(new Three.Matrix4().makeRotationX(-Math.PI / 2.0));
+
+    return matrixYPR(yaw, pitch, roll).multiply(permute);
 }
