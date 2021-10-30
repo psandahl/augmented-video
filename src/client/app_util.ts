@@ -78,6 +78,17 @@ export function createRenderer(cameraAspectRatio: number): Three.WebGLRenderer {
 }
 
 /**
+ * Check if a coordinate is within NDC area.
+ * @param coord A NDC coordinate.
+ * @returns True if coordinate is within [-1, 1]
+ */
+export function withinDrawingNDC(coord: Three.Vector2): boolean {
+    return (
+        coord.x >= -1.0 && coord.x <= 1.0 && coord.y >= -1.0 && coord.y <= 1.0
+    );
+}
+
+/**
  * Calculate the drawing area within the canvas area
  * @param cameraAspectRatio The camera's aspect ratio
  * @returns The drawing area [x, y, width, height]

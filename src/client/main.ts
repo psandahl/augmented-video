@@ -2,6 +2,7 @@ import * as Three from 'three';
 import Stats from 'three/examples/jsm/libs/stats.module';
 
 import {
+    calcDrawingArea,
     cameraRotationYPR,
     createEmptyScene,
     createPerspectiveCamera,
@@ -10,15 +11,15 @@ import {
     fetchCollada,
     fetchImage,
     fetchRewriteAndLoadColladaTerrainTiles,
-    ecefToGLRotation,
     setDrawingArea,
+    withinDrawingNDC,
 } from './app_util';
 import { VideoOverlay } from './video_overlay';
 
 /**
  * Kick-start the application.
  */
-window.onload = simplestDemo;
+window.onload = simplestTerrainDemo;
 
 async function simplestTerrainDemo() {
     try {
@@ -55,11 +56,33 @@ async function simplestTerrainDemo() {
         const stats = Stats();
         document.body.appendChild(stats.dom);
 
+        const mousePos = new Three.Vector2();
+
+        window.onmousemove = (event: MouseEvent) => {
+            // Calculate NDC coordinates for the drawing area.
+            const drawingArea = calcDrawingArea(camera.aspect);
+            const u =
+                event.clientX / drawingArea[2] -
+                drawingArea[0] / drawingArea[2];
+            const v =
+                event.clientY / drawingArea[3] -
+                drawingArea[1] / drawingArea[3];
+
+            mousePos.x = u * 2 - 1;
+            mousePos.y = -v * 2 + 1;
+        };
+
         window.onresize = () => {
             setDrawingArea(renderer, camera.aspect);
         };
 
         renderer.setAnimationLoop(() => {
+            if (withinDrawingNDC(mousePos)) {
+                console.log(mousePos);
+            } else {
+                console.log('njet');
+            }
+
             camera.updateMatrixWorld();
             renderer.render(scene, camera);
 
