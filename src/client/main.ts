@@ -49,6 +49,7 @@ async function simplestTerrainDemo() {
         //const camRot = cameraRotationYPR(-0.9804382, 0.7318679, 2.5203709);
         const camRot = cameraRotationYPR(-0.8009253, 0.681823, 2.6025103);
 
+        // Set camera pose.
         camera.position.set(camPos.x, camPos.y, camPos.z);
         camera.setRotationFromMatrix(camRot);
 
@@ -56,8 +57,8 @@ async function simplestTerrainDemo() {
         const stats = Stats();
         document.body.appendChild(stats.dom);
 
+        // Callback to track the mouse position as NDC.
         const mousePos = new Three.Vector2();
-
         window.onmousemove = (event: MouseEvent) => {
             // Calculate NDC coordinates for the drawing area.
             const drawingArea = calcDrawingArea(camera.aspect);
@@ -72,15 +73,34 @@ async function simplestTerrainDemo() {
             mousePos.y = -v * 2 + 1;
         };
 
+        // Callback to react on resize events.
         window.onresize = () => {
             setDrawingArea(renderer, camera.aspect);
         };
 
+        // Setup stuff for raycasting the scene.
+        const raycaster = new Three.Raycaster();
+        const normalArrow = new Three.ArrowHelper();
+        normalArrow.visible = false;
+        scene.add(normalArrow);
+
+        // The render loop.
         renderer.setAnimationLoop(() => {
             if (withinDrawingNDC(mousePos)) {
-                console.log(mousePos);
+                raycaster.setFromCamera(mousePos, camera);
+                const intersects = raycaster.intersectObjects(scene.children);
+                if (intersects.length > 0 && intersects[0].face) {
+                    const point = intersects[0].point;
+                    normalArrow.position.set(point.x, point.y, point.z);
+                    normalArrow.setDirection(intersects[0].face.normal);
+                    normalArrow.setLength(100, 35, 15);
+
+                    normalArrow.visible = true;
+                } else {
+                    normalArrow.visible = false;
+                }
             } else {
-                console.log('njet');
+                normalArrow.visible = false;
             }
 
             camera.updateMatrixWorld();
