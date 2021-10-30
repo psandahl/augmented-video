@@ -78,6 +78,33 @@ export function createRenderer(cameraAspectRatio: number): Three.WebGLRenderer {
 }
 
 /**
+ * Calculate the drawing area within the canvas area
+ * @param cameraAspectRatio The camera's aspect ratio
+ * @returns The drawing area [x, y, width, height]
+ */
+export function calcDrawingArea(
+    cameraAspectRatio: number
+): [number, number, number, number] {
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    const canvasAspectRatio = width / height;
+
+    if (cameraAspectRatio > canvasAspectRatio) {
+        // The camera view is wider than the canvas, keep the width but
+        // adjust the height.
+        const adjHeight = width * (1.0 / cameraAspectRatio);
+        const diff = height - adjHeight;
+        return [0, diff / 2, width, adjHeight];
+    } else {
+        // The video is equal or taller than the device. Keep the height
+        // but adjust the width.
+        const adjWidth = height * cameraAspectRatio;
+        const diff = width - adjWidth;
+        return [diff / 2, 0, adjWidth, height];
+    }
+}
+
+/**
  * Resize the renderer
  * @param renderer The renderer
  * @param cameraAspectRatio Aspect ratio for the camera
@@ -91,24 +118,19 @@ export function setDrawingArea(
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(width, height);
 
-    const canvasAspectRatio = width / height;
-    if (cameraAspectRatio > canvasAspectRatio) {
-        // The camera view is wider than the canvas, keep the width but
-        // adjust the height.
-        const adjHeight = width * (1.0 / cameraAspectRatio);
-        const diff = height - adjHeight;
-
-        renderer.setViewport(0, diff / 2, width, adjHeight);
-        renderer.setScissor(0, diff / 2, width, adjHeight);
-    } else {
-        // The video is equal or taller than the device. Keep the height
-        // but adjust the width.
-        const adjWidth = height * cameraAspectRatio;
-        const diff = width - adjWidth;
-
-        renderer.setViewport(diff / 2, 0, adjWidth, height);
-        renderer.setScissor(diff / 2, 0, adjWidth, height);
-    }
+    const drawingArea = calcDrawingArea(cameraAspectRatio);
+    renderer.setViewport(
+        drawingArea[0],
+        drawingArea[1],
+        drawingArea[2],
+        drawingArea[3]
+    );
+    renderer.setScissor(
+        drawingArea[0],
+        drawingArea[1],
+        drawingArea[2],
+        drawingArea[3]
+    );
 }
 
 /**
