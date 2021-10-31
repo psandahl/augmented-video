@@ -35,7 +35,7 @@ async function simplestTerrainDemo() {
         // Load data (not checked in).
         const converter = createUtmToEcefConverter(33);
         const terrainBox = await fetchRewriteAndLoadColladaTerrainTiles(
-            ['./content/10/520/10_520_305/10_520_305.dae'],
+            ['./content/demo/tiles/10/520/10_520_305/10_520_305.dae'],
             converter,
             scene
         );
