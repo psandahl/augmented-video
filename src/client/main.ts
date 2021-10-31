@@ -30,24 +30,40 @@ function metadataUrl(n: number): string {
     return `./content/demo/meta/${n}.json`;
 }
 
+function imageUrl(n: number): string {
+    return `./content/demo/images/${n}.png`;
+}
+
 async function simplestTerrainDemo() {
     try {
         const scene = createEmptyScene();
         const camera = createPerspectiveCamera();
 
+        // Load initial metadata (not checked in).
         const metadata = await fetchJSON<Metadata>(metadataUrl(0));
         setCameraMetadata(camera, metadata);
 
         const renderer = createRenderer(camera.aspect);
         document.body.append(renderer.domElement);
 
-        // Load data (not checked in).
+        // Load terrain data (not checked in).
         const converter = createUtmToEcefConverter(33);
         const terrainBox = await fetchRewriteAndLoadColladaTerrainTiles(
-            ['./content/demo/tiles/10/520/10_520_305/10_520_305.dae'],
+            [
+                './content/demo/tiles/10/520/10_520_305/10_520_305.dae',
+                './content/demo/tiles/10/520/10_520_306/10_520_306.dae',
+                './content/demo/tiles/10/520/10_520_307/10_520_307.dae',
+            ],
             converter,
             scene
         );
+
+        // Load initial nnimage (not checked in).
+        const image = await fetchImage(imageUrl(0));
+        const videoOverlay = new VideoOverlay();
+        videoOverlay.updateTexture(image);
+        videoOverlay.mesh().visible = true;
+        scene.add(videoOverlay.mesh());
 
         // Tool: Add the statistics widget to the DOM.
         const stats = Stats();
@@ -82,6 +98,8 @@ async function simplestTerrainDemo() {
         window.onkeydown = async (event: KeyboardEvent) => {
             if (event.code == 'KeyN') {
                 showNormal = !showNormal;
+            } else if (event.code == 'KeyI') {
+                videoOverlay.mesh().visible = !videoOverlay.mesh().visible;
             } else if (
                 event.code == 'ArrowLeft' ||
                 event.code == 'ArrowRight'
@@ -95,6 +113,8 @@ async function simplestTerrainDemo() {
                 );
                 setCameraMetadata(camera, metadata);
                 setDrawingArea(renderer, camera.aspect);
+                const image = await fetchImage(imageUrl(currentItem));
+                videoOverlay.updateTexture(image);
             }
         };
 
@@ -116,6 +136,7 @@ async function simplestTerrainDemo() {
                     normalArrow.setLength(100, 35, 15);
 
                     normalArrow.visible = true;
+                    normalArrow.renderOrder = 2;
                 } else {
                     normalArrow.visible = false;
                 }
