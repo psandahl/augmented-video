@@ -17,6 +17,7 @@ import {
     setCameraMetadata,
     setDrawingArea,
     withinDrawingNDC,
+    fetchJSON,
 } from './app_util';
 import { VideoOverlay } from './video_overlay';
 
@@ -25,21 +26,16 @@ import { VideoOverlay } from './video_overlay';
  */
 window.onload = simplestTerrainDemo;
 
+function metadataUrl(n: number): string {
+    return `./content/demo/meta/${n}.json`;
+}
+
 async function simplestTerrainDemo() {
     try {
         const scene = createEmptyScene();
         const camera = createPerspectiveCamera();
 
-        const metadata: Metadata = {
-            x: 3427185.2975538,
-            y: 938976.268528,
-            z: 5280812.4649243,
-            yaw: radToDeg(-0.8009253),
-            pitch: radToDeg(0.681823),
-            roll: radToDeg(2.6025103),
-            hfov: 40,
-            vfov: 30,
-        };
+        const metadata = await fetchJSON<Metadata>(metadataUrl(0));
         setCameraMetadata(camera, metadata);
 
         const renderer = createRenderer(camera.aspect);
@@ -80,9 +76,25 @@ async function simplestTerrainDemo() {
 
         // Callback to react on keyboard press.
         var showNormal = false;
-        window.onkeydown = (event: KeyboardEvent) => {
+        var currentItem = 0;
+        const minItem = 0;
+        const maxItem = 2;
+        window.onkeydown = async (event: KeyboardEvent) => {
             if (event.code == 'KeyN') {
                 showNormal = !showNormal;
+            } else if (
+                event.code == 'ArrowLeft' ||
+                event.code == 'ArrowRight'
+            ) {
+                currentItem =
+                    event.code == 'ArrowLeft'
+                        ? Math.max(currentItem - 1, minItem)
+                        : Math.min(currentItem + 1, maxItem);
+                const metadata = await fetchJSON<Metadata>(
+                    metadataUrl(currentItem)
+                );
+                setCameraMetadata(camera, metadata);
+                setDrawingArea(renderer, camera.aspect);
             }
         };
 
