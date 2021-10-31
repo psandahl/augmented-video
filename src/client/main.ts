@@ -1,7 +1,5 @@
 import * as Three from 'three';
-import { Color } from 'three';
 import Stats from 'three/examples/jsm/libs/stats.module';
-import { radToDeg } from 'three/src/math/MathUtils';
 
 import {
     Metadata,
@@ -58,7 +56,7 @@ async function simplestTerrainDemo() {
             scene
         );
 
-        // Load initial nnimage (not checked in).
+        // Load initial image (not checked in).
         const image = await fetchImage(imageUrl(0));
         const videoOverlay = new VideoOverlay();
         videoOverlay.updateTexture(image);
@@ -225,7 +223,6 @@ async function simplestDemo() {
 
         // Run the rendering loop.
         renderer.setAnimationLoop(() => {
-            camera.updateMatrixWorld();
             renderer.render(scene, camera);
 
             stats.update();
