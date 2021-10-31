@@ -78,6 +78,14 @@ async function simplestTerrainDemo() {
             setDrawingArea(renderer, camera.aspect);
         };
 
+        // Callback to react on keyboard press.
+        var showNormal = false;
+        window.onkeydown = (event: KeyboardEvent) => {
+            if (event.code == 'KeyN') {
+                showNormal = !showNormal;
+            }
+        };
+
         // Setup stuff for raycasting the scene.
         const raycaster = new Three.Raycaster();
         const normalArrow = new Three.ArrowHelper();
@@ -89,7 +97,7 @@ async function simplestTerrainDemo() {
             if (withinDrawingNDC(mousePos)) {
                 raycaster.setFromCamera(mousePos, camera);
                 const intersects = raycaster.intersectObjects(scene.children);
-                if (intersects.length > 0 && intersects[0].face) {
+                if (showNormal && intersects.length > 0 && intersects[0].face) {
                     const point = intersects[0].point;
                     normalArrow.position.set(point.x, point.y, point.z);
                     normalArrow.setDirection(intersects[0].face.normal);
