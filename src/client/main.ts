@@ -90,12 +90,15 @@ async function simplestTerrainDemo() {
 
         // Callback to react on keyboard press.
         var showNormal = false;
+        var showCoord = false;
         var currentItem = 0;
         const minItem = 0;
         const maxItem = 2;
         window.onkeydown = async (event: KeyboardEvent) => {
             if (event.code == 'KeyN') {
                 showNormal = !showNormal;
+            } else if (event.code == 'KeyT') {
+                showCoord = !showCoord;
             } else if (event.code == 'KeyI') {
                 videoOverlay.mesh().visible = !videoOverlay.mesh().visible;
             } else if (
@@ -124,25 +127,32 @@ async function simplestTerrainDemo() {
 
         // The render loop.
         renderer.setAnimationLoop(() => {
+            const coordDisplay = document.getElementById(
+                'coordinates'
+            ) as HTMLDivElement;
+            coordDisplay.innerText = '';
+            normalArrow.visible = false;
+
             if (withinDrawingNDC(mousePos)) {
                 raycaster.setFromCamera(mousePos, camera);
                 const intersects = raycaster.intersectObjects(scene.children);
-                if (showNormal && intersects.length > 0 && intersects[0].face) {
+                if (intersects.length > 0 && intersects[0].face) {
                     const point = intersects[0].point;
-                    normalArrow.position.set(point.x, point.y, point.z);
-                    normalArrow.setDirection(intersects[0].face.normal);
-                    normalArrow.setLength(100, 35, 15);
 
-                    normalArrow.visible = true;
-                    normalArrow.renderOrder = 2;
-                } else {
-                    normalArrow.visible = false;
+                    if (showCoord) {
+                        const coordText = `x: ${point.x} y: ${point.y} z: ${point.z} dist: ${intersects[0].distance}m`;
+                        coordDisplay.innerText = coordText;
+                    }
+
+                    if (showNormal) {
+                        normalArrow.position.set(point.x, point.y, point.z);
+                        normalArrow.setDirection(intersects[0].face.normal);
+                        normalArrow.setLength(100, 35, 15);
+                        normalArrow.visible = true;
+                    }
                 }
-            } else {
-                normalArrow.visible = false;
             }
 
-            camera.updateMatrixWorld();
             renderer.render(scene, camera);
 
             stats.update();
@@ -223,6 +233,7 @@ async function simplestDemo() {
 
         // Run the rendering loop.
         renderer.setAnimationLoop(() => {
+            camera.updateMatrixWorld();
             renderer.render(scene, camera);
 
             stats.update();
