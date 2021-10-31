@@ -1,7 +1,10 @@
 import * as Three from 'three';
+import { Color } from 'three';
 import Stats from 'three/examples/jsm/libs/stats.module';
+import { radToDeg } from 'three/src/math/MathUtils';
 
 import {
+    Metadata,
     calcDrawingArea,
     cameraRotationYPR,
     createEmptyScene,
@@ -11,6 +14,7 @@ import {
     fetchCollada,
     fetchImage,
     fetchRewriteAndLoadColladaTerrainTiles,
+    setCameraMetadata,
     setDrawingArea,
     withinDrawingNDC,
 } from './app_util';
@@ -24,10 +28,19 @@ window.onload = simplestTerrainDemo;
 async function simplestTerrainDemo() {
     try {
         const scene = createEmptyScene();
+        const camera = createPerspectiveCamera();
 
-        const hFov = 40; // Dummy.
-        const vFov = 30;
-        const camera = createPerspectiveCamera(hFov, vFov);
+        const metadata: Metadata = {
+            x: 3427185.2975538,
+            y: 938976.268528,
+            z: 5280812.4649243,
+            yaw: radToDeg(-0.8009253),
+            pitch: radToDeg(0.681823),
+            roll: radToDeg(2.6025103),
+            hfov: 40,
+            vfov: 30,
+        };
+        setCameraMetadata(camera, metadata);
 
         const renderer = createRenderer(camera.aspect);
         document.body.append(renderer.domElement);
@@ -39,19 +52,6 @@ async function simplestTerrainDemo() {
             converter,
             scene
         );
-
-        //const camPos = new Three.Vector3(3427674.5252427, 939242.8100310, 5280882.1911107);
-        const camPos = new Three.Vector3(
-            3427185.2975538,
-            938976.268528,
-            5280812.4649243
-        );
-        //const camRot = cameraRotationYPR(-0.9804382, 0.7318679, 2.5203709);
-        const camRot = cameraRotationYPR(-0.8009253, 0.681823, 2.6025103);
-
-        // Set camera pose.
-        camera.position.set(camPos.x, camPos.y, camPos.z);
-        camera.setRotationFromMatrix(camRot);
 
         // Tool: Add the statistics widget to the DOM.
         const stats = Stats();
@@ -137,16 +137,25 @@ async function simplestDemo() {
         // Fetch model(s).
         const model = await fetchCollada('./content/collada/Gun.dae');
 
-        // Hard coded values for now.
-        const hFov = 60;
-        const vFov = 45;
-
         // Create scene.
         const scene = createEmptyScene();
 
         // Create camera.
-        const camera = createPerspectiveCamera(hFov, vFov);
-        camera.position.set(0, 0, 5);
+        const camera = createPerspectiveCamera();
+
+        const metadata: Metadata = {
+            x: 0,
+            y: 0,
+            z: 5,
+            yaw: 0,
+            pitch: 0,
+            roll: 0,
+            hfov: 60,
+            vfov: 45,
+        };
+
+        setCameraMetadata(camera, metadata, false);
+        console.log(camera.aspect);
 
         // Create renderer.
         const renderer = createRenderer(camera.aspect);

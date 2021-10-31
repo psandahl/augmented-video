@@ -7,6 +7,20 @@ import { degToRad } from 'three/src/math/MathUtils';
 import proj4 from 'proj4';
 
 /**
+ * Camera metadata. All angles are in degrees.
+ */
+export interface Metadata {
+    x: number;
+    y: number;
+    z: number;
+    yaw: number;
+    pitch: number;
+    roll: number;
+    hfov: number;
+    vfov: number;
+}
+
+/**
  * Calculate aspect ratio from field of view.
  * @param hFov Horizontal field of view in degrees
  * @param vFov Vertical field of view in degrees
@@ -43,18 +57,34 @@ export function ecefToGLRotation(): Three.Quaternion {
 /**
  * Create a new perspective camera which is bound to its specified
  * field of view specification rather than a canvas size.
- * @param hFov Horizontal field of view in degrees
- * @param vFov Vertical field of view in degrees
  * @returns The camera
  */
-export function createPerspectiveCamera(
-    hFov: number,
-    vFov: number
-): Three.PerspectiveCamera {
-    const aspectRatio = aspectRatioFromFov(hFov, vFov);
-    const camera = new Three.PerspectiveCamera(vFov, aspectRatio, 1.0, 10000.0);
+export function createPerspectiveCamera(): Three.PerspectiveCamera {
+    return new Three.PerspectiveCamera(45, 1.0, 1.0, 10000.0);
+}
 
-    return camera;
+/**
+ * Update the camera with new metadata
+ * @param camera The camera to update
+ * @param metadata The metadata
+ */
+export function setCameraMetadata(
+    camera: Three.PerspectiveCamera,
+    metadata: Metadata,
+    toEcef: boolean = true
+): void {
+    camera.position.set(metadata.x, metadata.y, metadata.z);
+    const camRot = cameraRotationYPR(
+        degToRad(metadata.yaw),
+        degToRad(metadata.pitch),
+        degToRad(metadata.roll),
+        toEcef
+    );
+    camera.setRotationFromMatrix(camRot);
+    camera.fov = metadata.vfov;
+    camera.aspect = aspectRatioFromFov(metadata.hfov, metadata.vfov);
+    camera.updateMatrixWorld();
+    camera.updateProjectionMatrix();
 }
 
 /**
@@ -178,6 +208,17 @@ export function fetchCollada(url: string): Promise<Collada> {
             (error) => reject(error)
         );
     });
+}
+
+/**
+ * Async fetch and decode a JSON object.
+ * @param url JSON url
+ * @returns Promise with decoded object
+ */
+export async function fetchJSON<T>(url: string): Promise<T> {
+    const response = await fetch(url);
+    const body = await response.json();
+    return body;
 }
 
 /**
@@ -344,10 +385,15 @@ export function matrixYPR(
 export function cameraRotationYPR(
     yaw: number,
     pitch: number,
-    roll: number
+    roll: number,
+    toEcef: boolean
 ): Three.Matrix4 {
-    const permute = new Three.Matrix4().makeRotationZ(Math.PI / 2.0);
-    permute.multiply(new Three.Matrix4().makeRotationX(-Math.PI / 2.0));
+    if (toEcef) {
+        const permute = new Three.Matrix4().makeRotationZ(Math.PI / 2.0);
+        permute.multiply(new Three.Matrix4().makeRotationX(-Math.PI / 2.0));
 
-    return matrixYPR(yaw, pitch, roll).multiply(permute);
+        return matrixYPR(yaw, pitch, roll).multiply(permute);
+    } else {
+        return matrixYPR(yaw, pitch, roll);
+    }
 }
