@@ -247,7 +247,7 @@ export function rewriteUTMTerrainModel(
     const group = new Three.Group();
     const material = new Three.MeshBasicMaterial({
         color: 0xff0000,
-        wireframe: true,
+        wireframe: false,
     });
 
     model.scene.traverse((child) => {

@@ -37,6 +37,9 @@ async function simplestTerrainDemo() {
         const scene = createEmptyScene();
         const camera = createPerspectiveCamera();
 
+        // Elf model for silly fun.
+        const elf = await fetchCollada('./content/collada/elf.dae');
+
         // Load initial metadata (not checked in).
         const metadata = await fetchJSON<Metadata>(metadataUrl(0));
         setCameraMetadata(camera, metadata);
@@ -84,17 +87,35 @@ async function simplestTerrainDemo() {
             mousePos.y = -v * 2 + 1;
         };
 
+        var mouseClicked = false;
+        window.onmousedown = (event: MouseEvent) => {
+            if (event.button == 1) {
+                mouseClicked = true;
+            }
+        };
+
         // Callback to react on resize events.
         window.onresize = () => {
             setDrawingArea(renderer, camera.aspect);
         };
 
         // Callback to react on keyboard press.
+        const ambientLight = new Three.AmbientLight(0xcccccc, 0.4);
+        scene.add(ambientLight);
+        const spotLight = new Three.SpotLight(0xffffff, 0.8);
+        spotLight.position.set(
+            camera.position.x,
+            camera.position.y,
+            camera.position.z
+        );
+        scene.add(spotLight);
+
         var showNormal = false;
         var showCoord = false;
         var currentItem = 0;
         const minItem = 0;
         const maxItem = 8;
+        const elfs: Three.Object3D[] = [];
         window.onkeydown = async (event: KeyboardEvent) => {
             if (event.code == 'KeyN') {
                 showNormal = !showNormal;
@@ -102,6 +123,11 @@ async function simplestTerrainDemo() {
                 showCoord = !showCoord;
             } else if (event.code == 'KeyI') {
                 videoOverlay.mesh().visible = !videoOverlay.mesh().visible;
+            } else if (event.code == 'Escape') {
+                elfs.forEach((elf) => {
+                    elf.removeFromParent();
+                });
+                elfs.length = 0;
             } else if (
                 event.code == 'ArrowLeft' ||
                 event.code == 'ArrowRight'
@@ -117,6 +143,11 @@ async function simplestTerrainDemo() {
                 setDrawingArea(renderer, camera.aspect);
                 const image = await fetchImage(imageUrl(currentItem));
                 videoOverlay.updateTexture(image);
+                spotLight.position.set(
+                    camera.position.x,
+                    camera.position.y,
+                    camera.position.z
+                );
             }
         };
 
@@ -134,11 +165,31 @@ async function simplestTerrainDemo() {
             coordDisplay.innerText = '';
             normalArrow.visible = false;
 
-            if ((showCoord || showNormal) && withinDrawingNDC(mousePos)) {
+            if (
+                (mouseClicked || showCoord || showNormal) &&
+                withinDrawingNDC(mousePos)
+            ) {
                 raycaster.setFromCamera(mousePos, camera);
                 const intersects = raycaster.intersectObjects(scene.children);
                 if (intersects.length > 0 && intersects[0].face) {
                     const point = intersects[0].point;
+
+                    if (mouseClicked) {
+                        const model = elf.scene.clone();
+                        model.scale.set(5, 5, 5);
+                        model.position.set(point.x, point.y, point.z);
+
+                        // Ouch ...
+                        const atPosition = point
+                            .clone()
+                            .addScaledVector(intersects[0].face.normal, 1000);
+
+                        model.lookAt(atPosition);
+
+                        model.renderOrder = 2;
+                        elfs.push(model);
+                        scene.add(model);
+                    }
 
                     if (showCoord) {
                         const coordText = `x: ${point.x} y: ${point.y} z: ${point.z} dist: ${intersects[0].distance}m`;
@@ -153,6 +204,14 @@ async function simplestTerrainDemo() {
                     }
                 }
             }
+
+            // Rotate all elfs.
+            elfs.forEach((elf) => {
+                elf.rotateZ(0.05);
+            });
+
+            // Always reset mouseClick.
+            mouseClicked = false;
 
             renderer.render(scene, camera);
 
