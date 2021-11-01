@@ -25,11 +25,11 @@ import { VideoOverlay } from './video_overlay';
 window.onload = simplestTerrainDemo;
 
 function metadataUrl(n: number): string {
-    return `./content/demo/meta/${n}.json`;
+    return `./content/demo0/meta/${n}.json`;
 }
 
 function imageUrl(n: number): string {
-    return `./content/demo/images/${n}.png`;
+    return `./content/demo0/images/${n}.png`;
 }
 
 async function simplestTerrainDemo() {
@@ -48,9 +48,9 @@ async function simplestTerrainDemo() {
         const converter = createUtmToEcefConverter(33);
         const terrainBox = await fetchRewriteAndLoadColladaTerrainTiles(
             [
-                './content/demo/tiles/10/520/10_520_305/10_520_305.dae',
-                './content/demo/tiles/10/520/10_520_306/10_520_306.dae',
-                './content/demo/tiles/10/520/10_520_307/10_520_307.dae',
+                './content/demo0/tiles/10/520/10_520_305/10_520_305.dae',
+                './content/demo0/tiles/10/520/10_520_306/10_520_306.dae',
+                './content/demo0/tiles/10/520/10_520_307/10_520_307.dae',
             ],
             converter,
             scene
