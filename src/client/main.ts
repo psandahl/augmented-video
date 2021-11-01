@@ -134,7 +134,7 @@ async function simplestTerrainDemo() {
             coordDisplay.innerText = '';
             normalArrow.visible = false;
 
-            if (withinDrawingNDC(mousePos)) {
+            if ((showCoord || showNormal) && withinDrawingNDC(mousePos)) {
                 raycaster.setFromCamera(mousePos, camera);
                 const intersects = raycaster.intersectObjects(scene.children);
                 if (intersects.length > 0 && intersects[0].face) {
