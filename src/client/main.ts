@@ -1,4 +1,5 @@
 import * as Three from 'three';
+import { degToRad } from 'three/src/math/MathUtils';
 import Stats from 'three/examples/jsm/libs/stats.module';
 
 import {
@@ -177,6 +178,9 @@ async function simplestTerrainDemo() {
                     if (mouseClicked) {
                         const model = elf.scene.clone();
                         model.scale.set(5, 5, 5);
+                        const pos = point
+                            .clone()
+                            .addScaledVector(intersects[0].face.normal, 8);
                         model.position.set(point.x, point.y, point.z);
 
                         // Ouch ...
@@ -199,7 +203,11 @@ async function simplestTerrainDemo() {
                     if (showNormal) {
                         normalArrow.position.set(point.x, point.y, point.z);
                         normalArrow.setDirection(intersects[0].face.normal);
-                        normalArrow.setLength(100, 35, 15);
+                        const len =
+                            Math.tan(degToRad(camera.fov) / 2.0) *
+                            intersects[0].distance *
+                            0.5;
+                        normalArrow.setLength(len, len * 0.35, len * 0.15);
                         normalArrow.visible = true;
                     }
                 }
