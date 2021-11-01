@@ -25,11 +25,11 @@ import { VideoOverlay } from './video_overlay';
 window.onload = simplestTerrainDemo;
 
 function metadataUrl(n: number): string {
-    return `./content/demo0/meta/${n}.json`;
+    return `./content/demo1/meta/${n}.json`;
 }
 
 function imageUrl(n: number): string {
-    return `./content/demo0/images/${n}.png`;
+    return `./content/demo1/images/${n}.png`;
 }
 
 async function simplestTerrainDemo() {
@@ -45,12 +45,13 @@ async function simplestTerrainDemo() {
         document.body.append(renderer.domElement);
 
         // Load terrain data (not checked in).
-        const converter = createUtmToEcefConverter(33);
+        const converter = createUtmToEcefConverter(10);
         const terrainBox = await fetchRewriteAndLoadColladaTerrainTiles(
             [
-                './content/demo0/tiles/10/520/10_520_305/10_520_305.dae',
-                './content/demo0/tiles/10/520/10_520_306/10_520_306.dae',
-                './content/demo0/tiles/10/520/10_520_307/10_520_307.dae',
+                './content/demo1/tiles/13/4195/13_4195_4757/13_4195_4757.dae',
+                './content/demo1/tiles/13/4195/13_4195_4758/13_4195_4758.dae',
+                './content/demo1/tiles/13/4196/13_4196_4757/13_4196_4757.dae',
+                './content/demo1/tiles/13/4196/13_4196_4758/13_4196_4758.dae',
             ],
             converter,
             scene
@@ -93,7 +94,7 @@ async function simplestTerrainDemo() {
         var showCoord = false;
         var currentItem = 0;
         const minItem = 0;
-        const maxItem = 2;
+        const maxItem = 8;
         window.onkeydown = async (event: KeyboardEvent) => {
             if (event.code == 'KeyN') {
                 showNormal = !showNormal;

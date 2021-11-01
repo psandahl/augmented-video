@@ -281,7 +281,11 @@ export function rewriteUTMTerrainModel(
                     );
 
                     // Transform using the coordinate transform.
-                    const [xx, yy, zz] = csConv.forward([pos.x, pos.y, pos.z]);
+                    const [xx, yy, zz] = csConv.forward([
+                        pos.x,
+                        pos.y,
+                        pos.z - 22, // This is dirty :-)
+                    ]);
                     positions.setXYZ(i, xx, yy, zz);
                 }
 
