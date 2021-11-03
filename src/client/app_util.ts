@@ -321,19 +321,19 @@ export function rewriteUTMTerrainModel(
 export async function fetchRewriteAndLoadColladaTerrainTiles(
     urls: string[],
     csConv: proj4.Converter,
-    scene: Three.Scene,
     rotations: Three.Quaternion = new Three.Quaternion()
-): Promise<Three.Box3> {
+): Promise<[Three.Box3, Three.Group[]]> {
     const bBox = new Three.Box3();
+    const groups: Three.Group[] = [];
     for (let i = 0; i < urls.length; ++i) {
         const origModel = await fetchCollada(urls[i]);
         const adjModel = rewriteUTMTerrainModel(origModel, csConv);
         adjModel.setRotationFromQuaternion(rotations);
-        scene.add(adjModel);
         bBox.expandByObject(adjModel);
+        groups.push(adjModel);
     }
 
-    return bBox;
+    return [bBox, groups];
 }
 
 /**

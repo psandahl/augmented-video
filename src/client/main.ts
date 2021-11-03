@@ -50,16 +50,19 @@ async function simplestTerrainDemo() {
 
         // Load terrain data (not checked in).
         const converter = createUtmToEcefConverter(10);
-        const terrainBox = await fetchRewriteAndLoadColladaTerrainTiles(
-            [
-                './content/demo1/tiles/13/4195/13_4195_4757/13_4195_4757.dae',
-                './content/demo1/tiles/13/4195/13_4195_4758/13_4195_4758.dae',
-                './content/demo1/tiles/13/4196/13_4196_4757/13_4196_4757.dae',
-                './content/demo1/tiles/13/4196/13_4196_4758/13_4196_4758.dae',
-            ],
-            converter,
-            scene
-        );
+        const [terrainBox, terrain] =
+            await fetchRewriteAndLoadColladaTerrainTiles(
+                [
+                    './content/demo1/tiles/13/4195/13_4195_4757/13_4195_4757.dae',
+                    './content/demo1/tiles/13/4195/13_4195_4758/13_4195_4758.dae',
+                    './content/demo1/tiles/13/4196/13_4196_4757/13_4196_4757.dae',
+                    './content/demo1/tiles/13/4196/13_4196_4758/13_4196_4758.dae',
+                ],
+                converter
+            );
+        terrain.forEach((tile) => {
+            scene.add(tile);
+        });
 
         // Load initial image (not checked in).
         const image = await fetchImage(imageUrl(0));
@@ -122,13 +125,24 @@ async function simplestTerrainDemo() {
                 showNormal = !showNormal;
             } else if (event.code == 'KeyT') {
                 showCoord = !showCoord;
-            } else if (event.code == 'KeyI') {
+            } else if (event.code == 'KeyO') {
                 videoOverlay.mesh().visible = !videoOverlay.mesh().visible;
             } else if (event.code == 'Escape') {
                 elfs.forEach((elf) => {
                     elf.removeFromParent();
                 });
                 elfs.length = 0;
+            } else if (event.code == 'KeyW') {
+                terrain.forEach((tile) => {
+                    tile.children.forEach((child) => {
+                        if (child instanceof Three.Mesh) {
+                            const mat = (child as Three.Mesh)
+                                .material as Three.MeshBasicMaterial;
+                            mat.wireframe = !mat.wireframe;
+                            mat.needsUpdate = true;
+                        }
+                    });
+                });
             } else if (
                 event.code == 'ArrowLeft' ||
                 event.code == 'ArrowRight'
